@@ -1,0 +1,16 @@
+/debug
+/downloads
+/file-history
+/ide
+/plans
+/projects
+/plugins
+/session-env
+/shell-snapshots
+/statsig
+/todos
+/history.jsonl
+/hooks/rio/logs
+.credentials.json
+/plugins/known_marketplaces.json
+stats-cache.json

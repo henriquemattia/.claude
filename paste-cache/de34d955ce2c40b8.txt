@@ -1,0 +1,29 @@
+Android Bundling failed 3932ms index.ts (1008 modules)
+Unable to resolve "react-native-safe-area-context" from "node_modules/expo-router/build/ExpoRoot.js"
+  39 | const react_1 = __importStar(require("react"));
+  40 | const react_native_1 = require("react-native");
+> 41 | const react_native_safe_area_context_1 = require("react-native-safe-area-context");
+     |                                                   ^
+  42 | const constants_1 = require("./constants");
+  43 | const useDomComponentNavigation_1 = require("./domComponents/useDomComponentNavigation");
+  44 | const NavigationContainer_1 = require("./fork/NavigationContainer");
+
+Import stack:
+
+ node_modules/expo-router/build/ExpoRoot.js
+ | import "react-native-safe-area-context"
+
+ node_modules/expo-router/build/qualified-entry.js
+ | import "./ExpoRoot"
+
+ node_modules/expo-router/entry-classic.js
+ | import "expo-router/build/qualified-entry"
+
+ node_modules/expo-router/entry.js
+ | import "expo-router/entry-classic"
+
+ index.ts
+ | import "expo-router/entry"
+
+
+ | import "./index.ts"

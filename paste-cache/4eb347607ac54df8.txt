@@ -1,0 +1,64 @@
+Android Bundling failed 4195ms index.ts (1096 modules)
+Unable to resolve "react-native-reanimated" from "node_modules/react-native-css-interop/dist/runtime/native/native-interop.js"
+  279 |         const { name: prevAnimationNames = [], duration: prevDurations = defaultAnimation.duration, delay: prevDelays = defaultAnimation.delay, timingFunction: prevBaseEasingFuncs = defaultAnimation.timingFunction, iterationCount: prevIterations = defaultAnimation.iterationCount, } = state.previousAnimation || {};
+  280 |         const waitingLayout = state.isWaitingLayout;
+> 281 |         const { makeMutable, withRepeat, withSequence } = require("react-native-reanimated");
+      |                                                                    ^
+  282 |         let shouldResetAnimations = waitingLayout ||
+  283 |             isDeepEqual(prevAnimationNames, animationNames) ||
+  284 |             isDeepEqual(prevDurations, durations) ||
+
+Import stack:
+
+ node_modules/react-native-css-interop/dist/runtime/native/native-interop.js
+ | import "react-native-reanimated"
+
+ node_modules/react-native-css-interop/dist/runtime/native/api.js
+ | import "./native-interop"
+
+ node_modules/react-native-css-interop/dist/runtime/api.native.js
+ | import "./native/api"
+
+ node_modules/react-native-css-interop/dist/runtime/wrap-jsx.js
+ | import "./api"
+
+ node_modules/react-native-css-interop/dist/runtime/jsx-runtime.js
+ | import "./wrap-jsx"
+
+ node_modules/expo/src/errors/AppEntryNotFound.tsx
+ | import "react-native-css-interop/jsx-runtime"
+
+ node_modules/expo/src/Expo.fx.tsx
+ | import "./errors/AppEntryNotFound"
+
+ node_modules/expo/src/Expo.ts
+ | import "./Expo.fx"
+
+ node_modules/expo-router/build/utils/splash.js
+ | import "expo"
+
+ node_modules/expo-router/build/views/Splash.js
+ | import "../utils/splash"
+
+ node_modules/expo-router/build/global-state/router-store.js
+ | import "../views/Splash"
+
+ node_modules/expo-router/build/global-state/routing.js
+ | import "./router-store"
+
+ node_modules/expo-router/build/imperative-api.js
+ | import "./global-state/routing"
+
+ node_modules/expo-router/build/hooks.js
+ | import "./imperative-api"
+
+ node_modules/expo-router/build/exports.js
+ | import "./hooks"
+
+ node_modules/expo-router/build/index.js
+ | import "./exports"
+
+ app/_layout.tsx
+ | import "expo-router"
+
+ app (require.context)
