@@ -1,5 +1,19 @@
 {
-  "alwaysThinkingEnabled": true,
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "0"
+  },
+  "permissions": {
+    "allow": [
+      "mcp__codegraph__codegraph_search",
+      "mcp__codegraph__codegraph_context",
+      "mcp__codegraph__codegraph_callers",
+      "mcp__codegraph__codegraph_callees",
+      "mcp__codegraph__codegraph_impact",
+      "mcp__codegraph__codegraph_node",
+      "mcp__codegraph__codegraph_status"
+    ]
+  },
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -14,6 +28,75 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/henrique/.claude/hooks/gsd-check-update.js\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit|Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/henrique/.claude/hooks/gsd-context-monitor.js\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "codegraph mark-dirty",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/henrique/.claude/hooks/gsd-prompt-guard.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "codegraph sync-if-dirty"
+          }
+        ]
+      }
     ]
-  }
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "input=$(cat); model=$(echo \"$input\" | jq -r '.model.display_name'); project_dir=$(echo \"$input\" | jq -r '.workspace.project_dir'); project_name=$(basename \"$project_dir\"); context_size=$(echo \"$input\" | jq -r '.context_window.context_window_size'); current_input=$(echo \"$input\" | jq -r '.context_window.current_usage.input_tokens // 0'); current_output=$(echo \"$input\" | jq -r '.context_window.current_usage.output_tokens // 0'); cache_read=$(echo \"$input\" | jq -r '.context_window.current_usage.cache_read_input_tokens // 0'); current_total=$((current_input + current_output + cache_read)); current_k=$(awk -v total=\"$current_total\" 'BEGIN {printf \"%.0f\", total / 1000}'); context_k=$(awk -v size=\"$context_size\" 'BEGIN {printf \"%.0f\", size / 1000}'); model_colors=(31 32 33 36 91 92 96); model_color=${model_colors[$((RANDOM % ${#model_colors[@]}))]}; block_time=\"\"; if command -v ccusage &> /dev/null; then ccusage_output=$(ccusage statusline 2>/dev/null); if [ -n \"$ccusage_output\" ]; then block_time=$(echo \"$ccusage_output\" | grep -oE '[0-9]+h [0-9]+m left' || echo \"$ccusage_output\" | grep -oE '[0-9]+m left' || echo \"\"); if [ -n \"$block_time\" ]; then block_time=$(printf \" | \\033[35m%s\\033[0m\" \"$block_time\"); fi; fi; fi; git_branch=\"\"; if [ -d \"$project_dir/.git\" ]; then branch=$(cd \"$project_dir\" && git --no-optional-locks symbolic-ref --short HEAD 2>/dev/null || git --no-optional-locks rev-parse --short HEAD 2>/dev/null); if [ -n \"$branch\" ]; then git_branch=$(printf \" | \\033[95m%s\\033[0m\" \"$branch\"); fi; fi; printf \"\\033[94m%s\\033[0m%s | \\033[%sm%s\\033[0m | \\033[93m%sk/%sk\\033[0m%s\" \"$project_name\" \"$git_branch\" \"$model_color\" \"$model\" \"$current_k\" \"$context_k\" \"$block_time\""
+  },
+  "enabledPlugins": {
+    "px-workflows@px-center": true,
+    "playground@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "xhigh",
+  "teammateMode": "auto",
+  "skipAutoPermissionPrompt": true,
+  "voiceEnabled": true
 }

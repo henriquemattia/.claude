@@ -14,3 +14,27 @@
 .credentials.json
 /plugins/known_marketplaces.json
 stats-cache.json
+
+# runtime caches and state
+/backups
+/cache
+/image-cache
+/paste-cache
+/sessions
+/tasks
+/teams
+/get-shit-done
+/.codegraph
+
+# generated/local config (contains secrets or per-host data)
+/remote-settings.json
+/mcp-needs-auth-cache.json
+/policy-limits.json
+/gsd-file-manifest.json
+/package.json
+/package-lock.json
+/node_modules
+
+# os
+.DS_Store
+**/.DS_Store

@@ -27,8 +27,22 @@ module.exports = function (context) {
     'component',
     'state management',
     'useeffect',
+    'usememo',
+    'usereducer',
+    'usecontext',
     'memo',
     'performance',
+    'suspense',
+    'lazy',
+    'composition',
+    'compound',
+    'barrel',
+    'tree shaking',
+    'zustand',
+    'prop drilling',
+    'derived state',
+    'vite',
+    'code splitting',
   ];
 
   // Count matching keywords

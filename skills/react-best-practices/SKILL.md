@@ -4,54 +4,181 @@ description: Modern React 18+ patterns with TypeScript, hooks, state management,
 allowed-tools: Read, Grep, Glob
 ---
 
-# React Best Practices (2025)
+# React Best Practices Skill (Vite + React SPA)
 
-## Component Patterns
+Guia de boas práticas React otimizado para consumo por agentes de IA.
+Stack: **React + Vite** (SPA, sem SSR/Server Components).
 
-### Functional Components Only
+---
+
+## 1. Práticas Críticas (Alto Impacto)
+
+### Eliminar Waterfalls com Promise.all
+
+Nunca use `await` sequencial quando as chamadas não dependem uma da outra.
 
 ```tsx
-interface UserCardProps {
-  user: User;
-  onSelect?: (user: User) => void;
+// ❌ Ruim — execução sequencial desnecessária
+const user = await fetchUser(id);
+const posts = await fetchPosts(id);
+
+// ✅ Bom — execução paralela
+const [user, posts] = await Promise.all([
+  fetchUser(id),
+  fetchPosts(id),
+]);
+```
+
+### Evitar Barrel Imports
+
+Não crie arquivos `index.ts` que reexportam tudo de uma pasta. Isso prejudica o tree shaking do Vite e aumenta o bundle.
+
+```tsx
+// ❌ Ruim — importa tudo do barrel
+import { Button } from "@/components";
+
+// ✅ Bom — importação direta
+import { Button } from "@/components/Button";
+```
+
+### Composição ao invés de Props Booleanas
+
+Divida componentes grandes com muitas props de configuração em microcomponentes combináveis.
+
+```tsx
+// ❌ Ruim — componente inchado com flags
+<Card showHeader showFooter variant="primary" />
+
+// ✅ Bom — composição explícita
+<Card>
+  <Card.Header />
+  ...
+  <Card.Footer>
+    <Button>Ação</Button>
+  </Card.Footer>
+</Card>
+```
+
+### Compound Components com Context
+
+Quando microcomponentes precisam compartilhar estado, use Context interno ao compound component.
+
+```tsx
+const CardContext = createContext(null);
+
+function useCardContext() {
+  const ctx = useContext(CardContext);
+  if (!ctx) throw new Error("Card.* deve ser usado dentro de <Card>");
+  return ctx;
 }
 
-function UserCard({ user, onSelect }: UserCardProps) {
+function Card({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false);
   return (
-    <article onClick={() => onSelect?.(user)}>
-      <h2>{user.name}</h2>
-    </article>
+    <CardContext.Provider value={{ open, setOpen }}>
+      {children}
+    </CardContext.Provider>
   );
 }
+
+Card.Toggle = function Toggle() {
+  const { open, setOpen } = useCardContext();
+  return <button onClick={() => setOpen(!open)}>Toggle</button>;
+};
+
+Card.Content = function Content({ children }: { children: ReactNode }) {
+  const { open } = useCardContext();
+  return open ? <div>{children}</div> : null;
+};
 ```
 
-### Props Destructuring
+### Keys para Resetar Estado de Componentes
 
-- Always destructure props in function signature
-- Use default values: `{ size = 'md' }: Props`
-- Spread remaining props: `{ className, ...rest }`
-
-### Composition Over Props Drilling
+Use a prop `key` para forçar o React a desmontar e remontar um componente, resetando todo seu estado interno.
 
 ```tsx
-// ❌ Prop drilling
-<Parent user={user}>
-  <Child user={user}>
-    <GrandChild user={user} />
-  </Child>
-</Parent>
-
-// ✅ Composition
-<UserProvider user={user}>
-  <Parent>
-    <Child>
-      <GrandChild />
-    </Child>
-  </Parent>
-</UserProvider>
+// ✅ Ao mudar o userId, o componente é recriado do zero
+<UserProfile key={userId} userId={userId} />
 ```
 
-## Hooks Best Practices
+---
+
+## 2. Lógica de Estado e Renderização
+
+### Calcular Estado Derivado durante o Render
+
+Nunca crie `useState` + `useEffect` para dados que podem ser calculados a partir de estado existente. Derive direto no corpo do componente.
+
+```tsx
+// ❌ Ruim — estado + effect desnecessários
+const [filtered, setFiltered] = useState([]);
+useEffect(() => {
+  setFiltered(items.filter((i) => i.active));
+}, [items]);
+
+// ✅ Bom — variável derivada
+const filtered = items.filter((i) => i.active);
+```
+
+Para cálculos pesados, use `useMemo`:
+
+```tsx
+const filtered = useMemo(
+  () => items.filter((i) => i.active),
+  [items],
+);
+```
+
+### Evitar Estado Redundante com Booleanos Derivados
+
+Se um booleano pode ser calculado a partir de outro estado, não crie um novo `useState`.
+
+```tsx
+// ❌ Ruim — estado duplicado
+const [query, setQuery] = useState("");
+const [hasMinLength, setHasMinLength] = useState(false);
+
+useEffect(() => {
+  setHasMinLength(query.length >= 3);
+}, [query]);
+
+// ✅ Bom — derivado direto
+const [query, setQuery] = useState("");
+const hasMinLength = query.length >= 3;
+```
+
+### Valores Default não Primitivos fora do Componente
+
+Defina objetos, arrays e funções padrão fora do componente para manter referências estáveis e não quebrar memoização.
+
+```tsx
+// ❌ Ruim — nova referência a cada render
+function List({ filters = {} }) { ... }
+
+// ✅ Bom — referência estável
+const DEFAULT_FILTERS = {};
+function List({ filters = DEFAULT_FILTERS }) { ... }
+```
+
+### useReducer para Estado Complexo
+
+Quando o estado tem múltiplos campos interdependentes, prefira `useReducer` a múltiplos `useState`.
+
+```tsx
+type State = { count: number; step: number };
+type Action = { type: "increment" } | { type: "setStep"; payload: number };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "increment":
+      return { ...state, count: state.count + state.step };
+    case "setStep":
+      return { ...state, step: action.payload };
+  }
+}
+
+const [state, dispatch] = useReducer(reducer, { count: 0, step: 1 });
+```
 
 ### useState
 
@@ -66,35 +193,16 @@ function UserCard({ user, onSelect }: UserCardProps) {
 - Avoid objects in dependency arrays (use primitives)
 
 ```tsx
-// ✅ Good: Minimal dependencies
 useEffect(() => {
   const handler = () => setWidth(window.innerWidth);
   window.addEventListener("resize", handler);
   return () => window.removeEventListener("resize", handler);
-}, []); // Empty = mount only
-```
-
-### useMemo / useCallback
-
-- Only for expensive computations
-- Only when passing to memoized children
-- Don't over-optimize prematurely
-
-```tsx
-// Memoize expensive filter
-const filtered = useMemo(
-  () => items.filter((i) => i.name.includes(search)),
-  [items, search],
-);
-
-// Memoize callback for React.memo child
-const handleClick = useCallback((id: string) => setSelected(id), []);
+}, []);
 ```
 
 ### Custom Hooks
 
-- Extract reusable logic
-- Name with `use` prefix
+- Extract reusable logic into `use`-prefixed functions
 - Return tuple or object consistently
 
 ```tsx
@@ -112,23 +220,78 @@ function useLocalStorage<T>(key: string, initial: T) {
 }
 ```
 
-## State Management
+---
 
-### Hierarchy (prefer top to bottom)
+## 3. Performance e Arquitetura
+
+### Lazy Loading com React.lazy + Suspense
+
+No Vite, use `React.lazy` para code-splitting de componentes pesados.
+
+```tsx
+import { lazy, Suspense } from "react";
+
+const HeavyChart = lazy(() => import("@/components/HeavyChart"));
+
+function Dashboard() {
+  return (
+    <Suspense fallback={<Spinner />}>
+      <HeavyChart />
+    </Suspense>
+  );
+}
+```
+
+### Múltiplas Suspense Boundaries
+
+Divida a UI em várias fronteiras de Suspense para que cada seção carregue de forma independente.
+
+```tsx
+function Page() {
+  return (
+    <main>
+      <Suspense fallback={<HeaderSkeleton />}>
+        <Header />
+      </Suspense>
+      <Suspense fallback={<ContentSkeleton />}>
+        <Content />
+      </Suspense>
+      <Suspense fallback={<SidebarSkeleton />}>
+        <Sidebar />
+      </Suspense>
+    </main>
+  );
+}
+```
+
+### Composição com children para Evitar Prop Drilling
+
+Antes de recorrer ao Context, tente resolver prop drilling passando componentes como `children`.
+
+```tsx
+// ❌ Ruim — prop drilling por 3 níveis
+<Layout user={user}>
+  <Sidebar user={user}>
+    <Avatar user={user} />
+  </Sidebar>
+</Layout>
+
+// ✅ Bom — composição com children
+<Layout>
+  <Sidebar>
+    <Avatar user={user} />
+  </Sidebar>
+</Layout>
+```
+
+### State Management Hierarchy (prefer top to bottom)
 
 1. **Local state** - Component-specific
 2. **Lifted state** - Shared between siblings
-3. **Context** - Cross-cutting (theme, auth)
+3. **Context** - Cross-cutting (theme, auth, i18n, feature flags)
 4. **External store** - Complex global state (Zustand, Jotai)
 
-### When to Use Context
-
-- Theme/appearance
-- User authentication
-- Locale/i18n
-- Feature flags
-
-### Zustand Pattern (Recommended)
+### Zustand Pattern
 
 ```tsx
 const useStore = create<State>((set) => ({
@@ -141,7 +304,41 @@ const useStore = create<State>((set) => ({
 }));
 ```
 
-## TypeScript Patterns
+### Set e Map para Lookups Rápidos
+
+Use `Set` e `Map` para buscas frequentes em vez de arrays.
+
+```tsx
+// ❌ Ruim — O(n) a cada verificação
+const isSelected = selectedIds.includes(id);
+
+// ✅ Bom — O(1)
+const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+const isSelected = selectedSet.has(id);
+```
+
+### React.memo
+
+- Wrap components receiving same props repeatedly
+- Combine with useCallback for function props
+- Don't use everywhere (adds overhead)
+
+### Adiar Scripts de Terceiros
+
+Carregue scripts de analytics, chat widgets ou login social de forma assíncrona e após o carregamento inicial.
+
+```tsx
+useEffect(() => {
+  const script = document.createElement("script");
+  script.src = "https://analytics.example.com/script.js";
+  script.async = true;
+  document.body.appendChild(script);
+}, []);
+```
+
+---
+
+## 4. TypeScript Patterns
 
 ### Props Types
 
@@ -175,34 +372,32 @@ function List<T>({ items, renderItem, keyExtractor }: ListProps<T>) {
 }
 ```
 
-## Performance
-
-### React.memo
-
-- Wrap components receiving same props repeatedly
-- Combine with useCallback for function props
-- Don't use everywhere (adds overhead)
-
-### Lazy Loading
+### Functional Components Only
 
 ```tsx
-const HeavyComponent = lazy(() => import("./HeavyComponent"));
+interface UserCardProps {
+  user: User;
+  onSelect?: (user: User) => void;
+}
 
-function App() {
+function UserCard({ user, onSelect }: UserCardProps) {
   return (
-    <Suspense fallback={<Spinner />}>
-      <HeavyComponent />
-    </Suspense>
+    <article onClick={() => onSelect?.(user)}>
+      <h2>{user.name}</h2>
+    </article>
   );
 }
 ```
 
-### Keys
+### Props Destructuring
 
-- Use stable, unique IDs (not array index)
-- Changing key forces remount
+- Always destructure props in function signature
+- Use default values: `{ size = 'md' }: Props`
+- Spread remaining props: `{ className, ...rest }`
 
-## Testing (Vitest + Testing Library)
+---
+
+## 5. Testing (Vitest + Testing Library)
 
 ```tsx
 import { render, screen, fireEvent } from "@testing-library/react";
@@ -218,22 +413,3 @@ describe("Button", () => {
   });
 });
 ```
-
-## Common Mistakes
-
-❌ **Avoid:**
-
-- Mutating state directly
-- Async operations in render
-- Inline object/array creation in JSX (causes re-renders)
-- Missing keys in lists
-- useEffect without dependencies
-- Over-abstracting too early
-
-✅ **Do:**
-
-- Treat state as immutable
-- Use error boundaries
-- Colocate state with usage
-- Memoize expensive computations
-- Use TypeScript strictly

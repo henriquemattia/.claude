@@ -6,6 +6,7 @@ Quick code review skill that checks PRs against your custom rules.
 
 Just ask Claude:
 - "Review PR #123"
+
 - "Check PR #456 for issues"
 - "Look at PR #789"
 

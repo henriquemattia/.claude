@@ -10,10 +10,9 @@ Configuration repository for Claude Code: agent definitions, settings, and utili
 ~/.claude/
 ├── agents/           # Multi-agent system: feature-refiner → coder → qa-code-reviewer
 ├── commands/         # Custom slash commands
-├── skills/           # atomic-commits, product-management
+├── skills/           # User-authored skills
 ├── utils/            # Shell helpers (cl command)
-├── settings.json     # Global settings
-└── settings.local.json  # Web permissions
+└── settings.json     # Global settings
 ```
 
 **Stack**: Markdown agents with YAML frontmatter, bash utilities
@@ -30,7 +29,7 @@ cl "your question"                            # Quick terminal help
 1. Never add code comments
 2. Minimize logging and console output
 3. Functional React only (no classes)
-4. Simplicity first - YAGNI
+4. Simplicity first — YAGNI
 
 ## Documentation Pointers
 
@@ -43,9 +42,7 @@ cl "your question"                            # Quick terminal help
 
 ## Critical Notes
 
-- Skills: product-management (auto-loaded), atomic-commits
-- Agent chain: feature-refiner → coder → qa-code-reviewer
-- coder ALWAYS delegates to qa-code-reviewer after implementation
+- Agent chain: feature-refiner → coder → qa-code-reviewer (coder ALWAYS delegates to qa)
+- ALWAYS ask permission before committing — user reviews everything before any commit
+- NEVER run destructive DB commands (`--fresh`, drops, truncates) on any project
 - Specs go in `specs/[feature-name].md`
-- Use Task tool with `subagent_type` to invoke agents
-- `alwaysThinkingEnabled: true` in settings.json
