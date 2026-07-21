@@ -25,6 +25,7 @@ stats-cache.json
 /teams
 /get-shit-done
 /.codegraph
+/telemetry
 
 # generated/local config (contains secrets or per-host data)
 /remote-settings.json

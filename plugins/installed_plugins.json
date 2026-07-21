@@ -14,21 +14,43 @@
     "playground@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/henrique/.claude/plugins/cache/claude-plugins-official/playground/unknown",
-        "version": "unknown",
+        "installPath": "/Users/henrique/.claude/plugins/cache/claude-plugins-official/playground/6d02a80eedcc",
+        "version": "6d02a80eedcc",
         "installedAt": "2026-02-24T10:08:58.554Z",
-        "lastUpdated": "2026-04-30T14:30:27.820Z",
+        "lastUpdated": "2026-05-06T14:02:30.373Z",
         "gitCommitSha": "99e11d95926936deb21c3fa29a098511573100d1"
       }
     ],
     "superpowers@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/henrique/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0",
-        "version": "5.1.0",
+        "installPath": "/Users/henrique/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1",
+        "version": "6.1.1",
         "installedAt": "2026-04-02T00:03:02.380Z",
-        "lastUpdated": "2026-05-05T11:41:48.318Z",
+        "lastUpdated": "2026-07-03T13:29:39.275Z",
         "gitCommitSha": "dd237283dbfe466e11bd4be55acf14ecb8f6636e"
+      }
+    ],
+    "php-lsp@claude-plugins-official": [
+      {
+        "scope": "project",
+        "installPath": "/Users/henrique/.claude/plugins/cache/claude-plugins-official/php-lsp/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-07-11T13:18:48.897Z",
+        "lastUpdated": "2026-07-11T13:18:48.897Z",
+        "gitCommitSha": "6d02a80eedcce64058eea504d04809863cbbd0e0",
+        "projectPath": "/Users/henrique/www/px/px-torre-core"
+      }
+    ],
+    "typescript-lsp@claude-plugins-official": [
+      {
+        "scope": "project",
+        "installPath": "/Users/henrique/.claude/plugins/cache/claude-plugins-official/typescript-lsp/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-07-11T13:18:48.897Z",
+        "lastUpdated": "2026-07-11T13:18:48.897Z",
+        "gitCommitSha": "6d02a80eedcce64058eea504d04809863cbbd0e0",
+        "projectPath": "/Users/henrique/www/px/px-torre-core"
       }
     ]
   }
